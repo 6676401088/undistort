@@ -5,5 +5,5 @@
 3. Forgive me for having hard coded parameters.
 4. Build and run according to the standard CMake procedure: cd undistort, mkdir build, cd build, cmake .., make, ./undistort
 
-###Example Result
+###Example Result (Input Frame (left) vs. Output Frame (right))
 ![Undistortion Result: Input(left) vs Output(right)](https://github.com/alexhagiopol/undistort/blob/master/example_result.png)
