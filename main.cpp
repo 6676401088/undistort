@@ -1,11 +1,35 @@
-//
-// Created by alex on 5/31/16.
-//
+/* *********************************************************************************************************************
+ * Straight Lines Should Be Straight Undistortion Procedure
+ * **********************************************************************************************************************
+ * Set your parameters below. The program will show a side by side comparison of each input video frame
+ * and its undistorted result. Press any key to advance to the next frame.Camera parameters are defined according to the
+ * OpenCV conventions: http://docs.opencv.org/2.4/doc/tutorials/calib3d/camera_calibration/camera_calibration.html
+ * Parameters for a given camera can be computed using a chessboard optimization procedure e.g. http://wiki.ros.org/ethzasl_ptam/Tutorials/camera_calibration
+ * Parameters below are from one of Alex's previous projects.
+ */
+
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
-
 using namespace std;
+
+/* *********************************************************************************************************************
+ * SET YOUR ALGORITHM PARAMETERS HERE:
+ * ********************************************************************************************************************/
+const string videoPath = "/home/alex/undistort/alex_drone_video.mp4"; //Absolute path to video file
+const int startFrameRange = 500; //Examine by hand starting from this frame number
+const int endFrameRange = 550; //Examine by hand ending at this frame number
+const double fx = 1223.80333938171; //Camera calibration parameter
+const double fy = 1223.80333938171; //Camera calibration parameter
+const double cx = 959.5; //Camera calibration parameter
+const double cy = 539.5; //Camera calibration parameter
+const double k1 = -0.0568935551550414; //Camera distortion parameter
+const double k2 = 0.00111003912518243; //Camera distortion parameter
+const double p1 = 0.000561203697652756; //Camera distortion parameter
+const double p2 = -0.00201554554913136; //Camera distortion parameter
+/* *********************************************************************************************************************
+ * END PARAMETERS SETTINGS
+ * ********************************************************************************************************************/
 
 void undistort(const cv::Mat& input,
                cv::Mat& output,
@@ -16,10 +40,10 @@ void undistort(const cv::Mat& input,
                double k2,
                double p1,
                double p2) {
-    //cout << "UNDISTORT: Starting..." << endl;
     int rows = input.rows;
     int cols = input.cols;
 
+    //Produce X and Y maps. We use these to know how to map the pixels in the input to pixels in the output.
     cv::Mat mapx(rows,cols,CV_32FC1);
     cv::Mat mapy(rows,cols,CV_32FC1);
     for (int i = 0; i < rows; i++){
@@ -36,28 +60,20 @@ void undistort(const cv::Mat& input,
             double scale = (r == 0) ? 1.0 : theta_d / r;
             double u = f * x * scale + cx;
             double v = f * y * scale + cy;
-
             mapx.at<float>(i,j) = (float) u;
             mapy.at<float>(i,j) = (float) v;
         }
     }
 
+    //Split input image into B G and R channels
     std::vector<cv::Mat> bgrChannels(3);
     cv::split(input,bgrChannels);
-    cv::Mat b_img(rows,cols,CV_8UC1);
-    cv::Mat g_img(rows,cols,CV_8UC1);
-    cv::Mat r_img(rows,cols,CV_8UC1);
-    b_img = bgrChannels[0];
-    g_img = bgrChannels[1];
-    r_img = bgrChannels[2];
-
     cv::Mat bb_img(rows,cols,CV_8UC1);
     cv::Mat gg_img(rows,cols,CV_8UC1);
     cv::Mat rr_img(rows,cols,CV_8UC1);
-    cv::Scalar zeroScalar = cv::Scalar(0);
-    cv::remap(b_img,bb_img,mapx,mapy,0,0);
-    cv::remap(g_img,gg_img,mapx,mapy,0,0);
-    cv::remap(r_img,rr_img,mapx,mapy,0,0);
+    cv::remap(bgrChannels[0],bb_img,mapx,mapy,0,0);
+    cv::remap(bgrChannels[1],gg_img,mapx,mapy,0,0);
+    cv::remap(bgrChannels[2],rr_img,mapx,mapy,0,0);
 
     //merge undistorted grayscale images back into color image. Replaces mixchannels() with merge() because mixchannels() throws nasty error
     std::vector<cv::Mat> arrays;
@@ -68,29 +84,7 @@ void undistort(const cv::Mat& input,
 }
 
 int main() {
-    std::cout << "Running Alex's undistort program. Parameters are hard-coded please forgive me." << std::endl;
-    /* Camera parameters are defined according to the OpenCV conventions: http://docs.opencv.org/2.4/doc/tutorials/calib3d/camera_calibration/camera_calibration.html
-     * Parameters for a given camera can be computed using a chessboard optimization procedure e.g. http://wiki.ros.org/ethzasl_ptam/Tutorials/camera_calibration
-     * Parameters below are from one of Alex's previous projects.
-     */
-
-    //File name
-    std::string videoPath = "/home/alex/mono/data/Beck-roof.mp4";
-    int startFrameRange = 50; //which frame you want to examine
-    int endFrameRange = 60;
-
-    //Calibration parameters
-    double fx = 1223.80333938171;
-    double fy = 1223.80333938171;
-    double cx = 959.5;
-    double cy = 539.5;
-
-    //Distortion parameters
-    double k1 = -0.0568935551550414;
-    double k2 = 0.00111003912518243;
-    double p1 = 0.000561203697652756;
-    double p2 = -0.00201554554913136;
-
+    std::cout << "Running Alex's undistort program." << std::endl;
     //Handle video input
     cv::VideoCapture capture(videoPath);
     if (!capture.isOpened()) {
@@ -116,27 +110,4 @@ int main() {
     }
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
