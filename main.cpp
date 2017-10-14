@@ -84,11 +84,11 @@ void undistort(const cv::Mat& input,
 }
 
 int main() {
-    std::cout << "Running Alex's undistort program." << std::endl;
+    std::cout << "Running undistort program." << std::endl;
     //Handle video input
     cv::VideoCapture capture(videoPath);
     if (!capture.isOpened()) {
-        cerr << "The video file could not be opened successfully!!!" << endl;
+        cerr << "The video file could not be opened." << endl;
         return 0;
     }
     int f = 0;
